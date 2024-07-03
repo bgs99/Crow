@@ -34,7 +34,8 @@ namespace crow // NOTE: Already documented in "crow/app.h"
         };
 
         // Codes taken from https://www.rfc-editor.org/rfc/rfc6455#section-7.4.1
-        enum CloseStatusCode : uint16_t {
+        enum CloseStatusCode : uint16_t
+        {
             NormalClosure = 1000,
             EndpointGoingAway = 1001,
             ProtocolError = 1002,
@@ -116,7 +117,8 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                        std::function<void(crow::websocket::connection&, const std::string&, bool)> message_handler,
                        std::function<void(crow::websocket::connection&, const std::string&, uint16_t)> close_handler,
                        std::function<void(crow::websocket::connection&, const std::string&)> error_handler,
-                       std::function<bool(const crow::request&, void**)> accept_handler):
+                       std::function<bool(const crow::request&, void**)> accept_handler,
+                       bool mirror_protocols):
               adaptor_(std::move(adaptor)),
               handler_(handler),
               max_payload_bytes_(max_payload),
@@ -281,7 +283,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                 max_payload_bytes_ = payload;
             }
 
-            /// Returns the matching client/server subprotocol, empty string if none matched. 
+            /// Returns the matching client/server subprotocol, empty string if none matched.
             std::string get_subprotocol() const override
             {
                 return subprotocol_;
@@ -307,7 +309,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                 else
                 {
                     buf[1] += 127;
-                    *reinterpret_cast<uint64_t*>(buf + 2) = ((1 == htonl(1)) ? static_cast<uint64_t>(size) : (static_cast<uint64_t>(htonl((size)&0xFFFFFFFF)) << 32) | htonl(static_cast<uint64_t>(size) >> 32));
+                    *reinterpret_cast<uint64_t*>(buf + 2) = ((1 == htonl(1)) ? static_cast<uint64_t>(size) : (static_cast<uint64_t>(htonl((size) & 0xFFFFFFFF)) << 32) | htonl(static_cast<uint64_t>(size) >> 32));
                     return {buf, buf + 10};
                 }
             }
@@ -368,7 +370,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                           asio::buffer(&mini_header_, 2),
                           [this](const error_code& ec, std::size_t
 #ifdef CROW_ENABLE_DEBUG
-                                                               bytes_transferred
+                                                         bytes_transferred
 #endif
                           )
 
@@ -436,7 +438,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                           adaptor_.socket(), asio::buffer(&remaining_length16_, 2),
                           [this](const error_code& ec, std::size_t
 #ifdef CROW_ENABLE_DEBUG
-                                                               bytes_transferred
+                                                         bytes_transferred
 #endif
                           ) {
                               is_reading = false;
@@ -472,11 +474,11 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                           adaptor_.socket(), asio::buffer(&remaining_length_, 8),
                           [this](const error_code& ec, std::size_t
 #ifdef CROW_ENABLE_DEBUG
-                                                               bytes_transferred
+                                                         bytes_transferred
 #endif
                           ) {
                               is_reading = false;
-                              remaining_length_ = ((1 == ntohl(1)) ? (remaining_length_) : (static_cast<uint64_t>(ntohl((remaining_length_)&0xFFFFFFFF)) << 32) | ntohl((remaining_length_) >> 32));
+                              remaining_length_ = ((1 == ntohl(1)) ? (remaining_length_) : (static_cast<uint64_t>(ntohl((remaining_length_) & 0xFFFFFFFF)) << 32) | ntohl((remaining_length_) >> 32));
 #ifdef CROW_ENABLE_DEBUG
                               if (!ec && bytes_transferred != 8)
                               {
@@ -516,7 +518,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                               adaptor_.socket(), asio::buffer((char*)&mask_, 4),
                               [this](const error_code& ec, std::size_t
 #ifdef CROW_ENABLE_DEBUG
-                                                                   bytes_transferred
+                                                             bytes_transferred
 #endif
                               ) {
                                   is_reading = false;
@@ -661,7 +663,9 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                         if (fragment_.size() >= 2)
                         {
                             status_code = ntohs(((uint16_t*)fragment_.data())[0]);
-                        } else {
+                        }
+                        else
+                        {
                             // no message will crash substr
                             message_start = 0;
                         }
@@ -823,6 +827,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
             std::function<void(crow::websocket::connection&, const std::string&, uint16_t status_code)> close_handler_;
             std::function<void(crow::websocket::connection&, const std::string&)> error_handler_;
             std::function<bool(const crow::request&, void**)> accept_handler_;
+            std::string subprotocol_;
         };
     } // namespace websocket
 } // namespace crow

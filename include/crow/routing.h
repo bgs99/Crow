@@ -337,7 +337,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
             };
 
         } // namespace routing_handler_call_helper
-    }     // namespace detail
+    } // namespace detail
 
 
     class CatchallRule
@@ -521,6 +521,12 @@ namespace crow // NOTE: Already documented in "crow/app.h"
             return *this;
         }
 
+        self_t& mirrorprotocols()
+        {
+            mirror_protocols_ = true;
+            return *this;
+        }
+
     protected:
         App* app_;
         std::function<void(crow::websocket::connection&)> open_handler_;
@@ -528,6 +534,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
         std::function<void(crow::websocket::connection&, const std::string&, uint16_t)> close_handler_;
         std::function<void(crow::websocket::connection&, const std::string&)> error_handler_;
         std::function<bool(const crow::request&, void**)> accept_handler_;
+        bool mirror_protocols_ = false;
         uint64_t max_payload_;
         bool max_payload_override_ = false;
         std::vector<std::string> subprotocols_;
@@ -1115,13 +1122,13 @@ namespace crow // NOTE: Already documented in "crow/app.h"
         Blueprint(const std::string& prefix):
           prefix_(prefix),
           static_dir_(prefix),
-          templates_dir_(prefix){};
+          templates_dir_(prefix) {};
 
         Blueprint(const std::string& prefix, const std::string& static_dir):
-          prefix_(prefix), static_dir_(static_dir){};
+          prefix_(prefix), static_dir_(static_dir) {};
 
         Blueprint(const std::string& prefix, const std::string& static_dir, const std::string& templates_dir):
-          prefix_(prefix), static_dir_(static_dir), templates_dir_(templates_dir){};
+          prefix_(prefix), static_dir_(static_dir), templates_dir_(templates_dir) {};
 
         /*
         Blueprint(Blueprint& other)
