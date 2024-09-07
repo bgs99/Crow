@@ -67,7 +67,7 @@
  * This is the recommended way to define routes in a crow application.
  * \see [Page of guide "Routes"](https://crowcpp.org/master/guides/routes/).
  */
-#define CROW_ROUTE(app, url) app.template route<crow::black_magic::get_parameter_tag(url)>(url)
+#define CROW_ROUTE(app, url) app.template route<::crow::black_magic::get_parameter_tag(url)>(url)
 
 /**
  * \def CROW_BP_ROUTE(blueprint, url)
@@ -120,7 +120,7 @@
  *
  * \see [Page of the guide "WebSockets"](https://crowcpp.org/master/guides/websockets/).
  */
-#define CROW_WEBSOCKET_ROUTE(app, url) app.route<crow::black_magic::get_parameter_tag(url)>(url).websocket<std::remove_reference<decltype(app)>::type>(&app)
+#define CROW_WEBSOCKET_ROUTE(app, url) app.route<::crow::black_magic::get_parameter_tag(url)>(url).websocket<std::remove_reference<decltype(app)>::type>(&app)
 
 /**
  * \def CROW_MIDDLEWARES(app, ...)
