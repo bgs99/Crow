@@ -44,7 +44,7 @@ namespace crow
 
     /// An HTTP connection.
     template<typename Adaptor, typename Handler, typename... Middlewares>
-    class Connection: public std::enable_shared_from_this<Connection<Adaptor, Handler, Middlewares...>>
+    class Connection : public std::enable_shared_from_this<Connection<Adaptor, Handler, Middlewares...>>
     {
         friend struct crow::response;
 
@@ -144,7 +144,7 @@ namespace crow
             req_.middleware_context = static_cast<void*>(&ctx_);
             req_.middleware_container = static_cast<void*>(middlewares_);
             req_.io_service = &adaptor_.get_io_service();
-            
+
             req_.remote_ip_address = adaptor_.remote_endpoint().address().to_string();
 
             add_keep_alive_ = req_.keep_alive;
@@ -167,7 +167,7 @@ namespace crow
                     }
                     else
                     {
-                
+
                         detail::middleware_call_helper<detail::middleware_call_criteria_only_global,
                                                        0, decltype(ctx_), decltype(*middlewares_)>({}, *middlewares_, req_, res, ctx_);
                         close_connection_ = true;
@@ -188,7 +188,7 @@ namespace crow
                 res.is_alive_helper_ = [self]() -> bool {
                     return self->adaptor_.is_open();
                 };
-                
+
                 detail::middleware_call_helper<detail::middleware_call_criteria_only_global,
                                                0, decltype(ctx_), decltype(*middlewares_)>({}, *middlewares_, req_, res, ctx_);
 
@@ -362,13 +362,15 @@ namespace crow
             if (res.code >= 400 && res.body.empty())
                 res.body = statusCodes[res.code].substr(9);
 
+            headers_.clear();
             for (auto& kv : res.headers)
             {
-                buffers_.emplace_back(kv.first.data(), kv.first.size());
-                buffers_.emplace_back(seperator.data(), seperator.size());
-                buffers_.emplace_back(kv.second.data(), kv.second.size());
-                buffers_.emplace_back(crlf.data(), crlf.size());
+                headers_ += kv.first;
+                headers_ += seperator;
+                headers_ += kv.second;
+                headers_ += crlf;
             }
+            buffers_.emplace_back(headers_.data(), headers_.size());
 
             if (!res.manual_length_header && !res.headers.count("content-length"))
             {
@@ -456,12 +458,12 @@ namespace crow
                 if (res.body.length() > 0)
                 {
                     std::vector<asio::const_buffer> buffers{1};
-                    const uint8_t *data = reinterpret_cast<const uint8_t*>(res.body.data());
+                    const uint8_t* data = reinterpret_cast<const uint8_t*>(res.body.data());
                     size_t length = res.body.length();
-                    for(size_t transferred = 0; transferred < length;)
+                    for (size_t transferred = 0; transferred < length;)
                     {
-                        size_t to_transfer = CROW_MIN(16384UL, length-transferred);
-                        buffers[0] = asio::const_buffer(data+transferred, to_transfer);
+                        size_t to_transfer = CROW_MIN(16384UL, length - transferred);
+                        buffers[0] = asio::const_buffer(data + transferred, to_transfer);
                         do_write_sync(buffers);
                         transferred += to_transfer;
                     }
@@ -530,7 +532,7 @@ namespace crow
               adaptor_.socket(), buffers_,
               [self](const error_code& ec, std::size_t /*bytes_transferred*/) {
                   self->res.clear();
-                  self->res_body_copy_.clear();                  
+                  self->res_body_copy_.clear();
                   if (!self->continue_requested)
                   {
                       self->parser_.clear();
@@ -539,7 +541,7 @@ namespace crow
                   {
                       self->continue_requested = false;
                   }
-                  
+
                   if (!ec)
                   {
                       if (self->close_connection_)
@@ -612,6 +614,7 @@ namespace crow
         std::vector<asio::const_buffer> buffers_;
 
         std::string content_length_;
+        std::string headers_;
         std::string date_str_;
         std::string res_body_copy_;
 
