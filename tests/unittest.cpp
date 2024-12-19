@@ -2085,7 +2085,7 @@ TEST_CASE("middleware_session")
 
     // lock
     {
-        asio::ip::tcp::socket c_lock(is);
+        asio::ip::tcp::socket c_lock(ic);
         c_lock.connect(asio::ip::tcp::endpoint(
           asio::ip::make_address(LOCALHOST_ADDRESS), 45451));
         c_lock.send(asio::buffer("GET /lock\r\n" + cookie + "\r\n\r\n"));
