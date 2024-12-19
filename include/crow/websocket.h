@@ -147,6 +147,11 @@ namespace crow // NOTE: Already documented in "crow/app.h"
                     }
                 }
 
+                if (mirror_protocols & !requested_subprotocols_header.empty())
+                {
+                    subprotocol_ = requested_subprotocols_header;
+                }
+
                 if (accept_handler_)
                 {
                     void* ud = nullptr;
@@ -827,7 +832,6 @@ namespace crow // NOTE: Already documented in "crow/app.h"
             std::function<void(crow::websocket::connection&, const std::string&, uint16_t status_code)> close_handler_;
             std::function<void(crow::websocket::connection&, const std::string&)> error_handler_;
             std::function<bool(const crow::request&, void**)> accept_handler_;
-            std::string subprotocol_;
         };
     } // namespace websocket
 } // namespace crow

@@ -464,12 +464,12 @@ namespace crow // NOTE: Already documented in "crow/app.h"
         void handle_upgrade(const request& req, response&, SocketAdaptor&& adaptor) override
         {
             max_payload_ = max_payload_override_ ? max_payload_ : app_->websocket_max_payload();
-            new crow::websocket::Connection<SocketAdaptor, App>(req, std::move(adaptor), app_, max_payload_, subprotocols_, open_handler_, message_handler_, close_handler_, error_handler_, accept_handler_);
+            new crow::websocket::Connection<SocketAdaptor, App>(req, std::move(adaptor), app_, max_payload_, subprotocols_, open_handler_, message_handler_, close_handler_, error_handler_, accept_handler_, mirror_protocols_);
         }
 #ifdef CROW_ENABLE_SSL
         void handle_upgrade(const request& req, response&, SSLAdaptor&& adaptor) override
         {
-            new crow::websocket::Connection<SSLAdaptor, App>(req, std::move(adaptor), app_, max_payload_, subprotocols_, open_handler_, message_handler_, close_handler_, error_handler_, accept_handler_);
+            new crow::websocket::Connection<SSLAdaptor, App>(req, std::move(adaptor), app_, max_payload_, subprotocols_, open_handler_, message_handler_, close_handler_, error_handler_, accept_handler_, mirror_protocols_);
         }
 #endif
 
@@ -1276,7 +1276,8 @@ namespace crow // NOTE: Already documented in "crow/app.h"
     public:
         bool using_ssl;
 
-        Router() : using_ssl(false)
+        Router():
+          using_ssl(false)
         {}
 
         DynamicRule& new_rule_dynamic(const std::string& rule)
@@ -1805,7 +1806,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
             }
             catch (const bad_request& e)
             {
-                res = response (400);
+                res = response(400);
                 res.body = e.what();
             }
             catch (const std::exception& e)
